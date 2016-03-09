@@ -1,5 +1,5 @@
-# positronium
-python tools pertaining to positronium
+# sspals
+python tools for analysing single-shot positron annihilation lifetime spectra
 
 ## Prerequisites
 
@@ -14,29 +14,55 @@ Package dependencies:
 via pip (recommended):
 
 ```
-pip install positronium
+pip install sspals
+```
+
+alternatively, try the development version
+
+```
+git clone https://github.com/PositroniumSpectroscopy/sspals
+```
+
+and then run
+
+```
+python setup.py install
 ```
 
 ## About
 
-This package is designed to collate useful bits of code relating to the positronium atom
-(i.e., an electron bound to its antiparticle, the positron).
+Single-shot positron annihilation lifetime spectroscopy (SSPALS) [Ref. 1] 
+essentially consists of studying the number of annihilation gamma-rays 
+measured as a function of time following implantation of a time-focused
+(~5 ns) positron bunch into a solid target material.
 
-The package currently only contains two very simple modules.
+For certain materials a significant fraction of the positrons (~ 30%) will
+bind to electrons to form positronium (Ps), which can then be re-emitted 
+to vacuum. Ps has a characteristic mean lifetime of 142 ns in vacuum, which 
+makes it relatively easy to identify in the SSPALS spectra.
 
-*constants* is intended to collect useful constants.
+This package includes a handful of useful tools for working with SSPALS data.
 
-*bohr* uses an adaption of the Rydberg formula (sim. to hydrogen) to calculate the principle
-energy levels of positronium, or the interval between two levels.  The default unit is 'eV',
-however, the kwarg 'unit' can be configured to return, for instance, the corresponding vacuum
-wavelength.
+The two main functions are used to: (i) combine data split across hi/ low 
+gain channels of a digital oscilloscope, and (ii) to estimate the amount of
+Ps formed using the so-called delayed fraction.
 
-```python
->>> from positronium import bohr
->>> bohr.En(1, 2, unit='nm')
-243.00454681357735
-```
+*sspals.chmx(hi, low)*
+>	Remove zero offset from hi and low gain data, invert and splice 
+    together by swapping saturated values from the hi-gain channel 
+    for those from the low-gain channel.  Apply along rows of a 2D array.
 
-For further examples see the IPython/ Jupter notebooks,
+*sspals.sspals(arr, dt)*
+>	Calculate the trigger time t0 (using a cfd) and the delayed fraction (DF)
+	(integral B->C / integral A->C) for each row of a 2D array. Return a pandas 
+	DataFrame [(t0, AC, BC, DF)].
 
-https://github.com/PositroniumSpectroscopy/positronium/tree/master/examples
+Raw data (hi, low) is expected to be 2D arrays of repeat measurements, where each
+row contains a single SSPALS waveform.
+
+For examples see the IPython/ Jupter notebooks,
+https://github.com/PositroniumSpectroscopy/sspals/tree/master/sspals/examples
+
+**Refs**.
+
+1.	D. B. Cassidy et al. (2006), Appl. Phys. Lett., 88, 194105.
