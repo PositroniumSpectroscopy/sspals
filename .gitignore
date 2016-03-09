@@ -6,6 +6,9 @@ __pycache__/
 # C extensions
 *.so
 
+# temporary files
+*~
+
 # Distribution / packaging
 .Python
 env/
@@ -57,3 +60,6 @@ docs/_build/
 
 # PyBuilder
 target/
+
+# IPython
+*.ipynb_checkpoints/
