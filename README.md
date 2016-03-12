@@ -60,7 +60,8 @@ Raw data (hi, low) is expected to be 2D arrays of repeat measurements, where eac
 row contains a single SSPALS waveform.
 
 For examples see the IPython/ Jupter notebooks,
-https://github.com/PositroniumSpectroscopy/sspals/tree/master/sspals/examples
+
+https://github.com/PositroniumSpectroscopy/sspals/tree/master/examples
 
 **Refs**.
 
