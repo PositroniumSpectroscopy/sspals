@@ -51,7 +51,7 @@ Ps formed using the so-called delayed fraction.
     together by swapping saturated values from the hi-gain channel 
     for those from the low-gain channel.  Apply along rows of a 2D array.
 
-*sspals.sspals(arr, dt)*
+*sspals.sspals(arr, dt, limits=[A, B, C])*
 >	Calculate the trigger time t0 (using a cfd) and the delayed fraction (DF)
 	(integral B->C / integral A->C) for each row of a 2D array. Return a pandas 
 	DataFrame [(t0, AC, BC, DF)].
@@ -65,4 +65,4 @@ https://github.com/PositroniumSpectroscopy/sspals/tree/master/examples
 
 **Refs**.
 
-1.	D. B. Cassidy et al. (2006), Appl. Phys. Lett., 88, 194105.
+1.	D. B. Cassidy et al. (2006), Appl. Phys. Lett., 88, 194105. http://dx.doi.org/10.1063/1.2203336
