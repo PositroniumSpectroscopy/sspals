@@ -57,8 +57,8 @@ def sub_offset(arr, n_bsub=100):
         defaults:
             n_bsub = 100
     '''
-    offset = np.mean(arr[:,:n_bsub], axis=1)
-    arr = np.subtract(arr.T, offset).T
+    offset = np.array([np.mean(arr[:,:n_bsub], axis=1)])
+    arr = np.subtract(arr, offset.T)
     return arr, offset
 
 def saturated(arr):
@@ -93,7 +93,7 @@ def splice(hi, low):
 
 def val_test(arr, min_range):
     ''' Validation test: does arr (1D) contain a signal? i.e., does the vertical range
-        exceed min_range.
+        exceed min_range?
         
         return:
             test (Boolean)
@@ -295,7 +295,7 @@ def sspals(arr, dt, **kwargs):
                      ('DF','float64')]
     
         defaults:
-            drop_na = True                     # remove empty rows
+            drop_na = False                    # remove empty rows
                                              
             scale = 0.8                        # cfd
             offset = 1.4E-8
