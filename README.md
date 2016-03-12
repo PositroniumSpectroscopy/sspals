@@ -39,10 +39,9 @@ measured as a function of time following implantation of a time-focused
 For certain materials a significant fraction of the positrons (~ 30%) will
 bind to electrons to form positronium (Ps), which can then be re-emitted 
 to vacuum. Ps has a characteristic mean lifetime of 142 ns in vacuum, which 
-makes it relatively easy to identify in the SSPALS spectra.
+makes it relatively easy to identify in SSPALS spectra.
 
-This package includes a handful of useful tools for working with SSPALS data.
-
+This package includes a handful of useful tools for working with SSPALS data. 
 The two main functions are used to: (i) combine data split across hi/ low 
 gain channels of a digital oscilloscope, and (ii) to estimate the amount of
 Ps formed using the so-called delayed fraction.

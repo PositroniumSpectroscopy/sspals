@@ -4,11 +4,43 @@ from __future__ import print_function, division
 Copyright (c) 2015-2016, UNIVERSITY COLLEGE LONDON
 
 @author: Adam Deller
+
+python tools for analysing single-shot positron annihilation lifetime spectra
 """
 from scipy import integrate
 from math import ceil
+from scipy.special import erf                               # the error function
 import numpy as np
 import pandas as pd
+
+''' 
+    ---------------
+    simulate SSPALS
+    ---------------
+'''
+def sim(t, A=1, sigma=2.0E-9, eff=0.3, tau_Ps=1.420461E-7, tau_D=1.0E-8):
+    ''' Approximate a realistic SSPALS spectra, f(t).
+        
+        Gaussian(A, sigma) time distribution with formation of Ps, (efficiency:eff, lifetime: tau_D),
+        convolved with detector function, decay constant: tau_D.
+        
+        return:
+            f(t)
+        
+        defaults:
+            A = 1
+            sigma = 2 ns
+            eff = 0.3
+            tau_Ps = 142.046 ns
+            tau_D = 10 ns
+            
+    '''
+    return -A * np.exp(-t *(2.0/tau_D + 1.0/tau_Ps))/ (2 * (tau_D - tau_Ps)) * \
+                         (eff * tau_D * np.exp((2.0*t/ tau_D + sigma**2.0/(2.0 * tau_Ps**2.0))) * \
+                         (1.0 + erf((t*tau_Ps - sigma**2.0)/(np.sqrt(2.0) * sigma * tau_Ps))) - \
+                         (tau_D + tau_Ps*(eff - 1.0)) * np.exp((sigma**2.0/(2.0*tau_D**2.0)) + \
+                         t*(1.0/tau_D + 1.0/tau_Ps)) * \
+                         (1.0 + erf((t*tau_D-sigma**2.0)/(np.sqrt(2.0) * sigma * tau_D))))
 
 ''' 
     ------------
@@ -17,22 +49,34 @@ import pandas as pd
 '''
 
 def sub_offset(arr, n_bsub=100):
-    ''' row-wise subtract the mean of the first 'n_bsub' number of points of arr (2D)
+    ''' Subtract the mean of the first 'n_bsub' number of points for each row in arr.
         
-        return
-            arr, offset    
+        return:
+            2D numpy array, offset
+        
+        defaults:
+            n_bsub = 100
     '''
     offset = np.mean(arr[:,:n_bsub], axis=1)
     arr = np.subtract(arr.T, offset).T
     return arr, offset
 
 def saturated(arr):
-    ''' find where arr (1D) is equal to its own max and min value'''
+    ''' Find where arr (1D) is equal to its own max and min value.
+        
+        return:
+            1D numpy array (Boolean)
+    '''
     s = np.logical_or(arr==arr.max(), arr==arr.min())
     return s
    
 def splice(hi, low):
-    '''splice together the hi and low gain values of a 2D dataset (assume hi saturated)'''
+    ''' Splice together the hi and low gain values of a 2D dataset (swap saturated sections
+        in the hi-gain channel for the corresponding values in the low-gain channel).
+        
+        return:
+            2D numpy array
+    '''
     mask = np.apply_along_axis(saturated, 1, hi)
     flask = mask.flatten() 
     vals = low.flatten()[np.where(flask)]          # replacement values
@@ -48,14 +92,25 @@ def splice(hi, low):
 '''
 
 def val_test(arr, min_range):
-    ''' where arr (1D) exceeds min_range '''
+    ''' Validation test: does arr (1D) contain a signal? i.e., does the vertical range
+        exceed min_range.
+        
+        return:
+            test (Boolean)
+    '''
     rng = abs(arr.max() - arr.min())
     return rng > min_range
 
 def validate(arr, **kwargs):
-    ''' filter out rows with range below min_range from 2D data set '''
-    # options  
-    min_range = kwargs.get('min_range', 0.2)
+    ''' Filter out rows from arr (2D) that have a vertical range < min_range.
+        
+        return:
+            2D numpy array
+            
+        defaults:
+            min_range = 0.1
+    '''
+    min_range = kwargs.get('min_range', 0.1)
     mask = np.apply_along_axis(val_test, 1, arr, min_range)
     return arr[mask]
 
@@ -70,11 +125,14 @@ def chmx(hi, low, **kwargs):
         together by swapping saturated values from the hi-gain channel 
         for those from the low-gain channel.  Apply along rows of 2D arrays.
         
+        return:
+            2D numpy array
+        
         defaults:
             n_bsub = 100      # number of points to use to find offset
             invert = True     # assume a negative (PMT) signal
-            validate = False  # only return rows above min_range
-            min_range = 0.2   # for use with validate
+            validate = False  # only return rows with a vertical range > min_range
+            min_range = 0.1   # see above
     '''
     # options  
     invert = kwargs.get('invert', True)
@@ -99,9 +157,12 @@ def chmx(hi, low, **kwargs):
 '''
 
 def cfd(arr, dt, **kwargs):
-    ''' Apply cfd algorithm to arr (1D). Return trigger time (t0).
-    
-        Defaults:
+    ''' Apply cfd algorithm to arr (1D) to find trigger time (t0).
+        
+        return:
+            trigger (float)
+        
+        defaults:
             scale = 0.8
             offset = 1.4E-8
             threshold = 0.04
@@ -128,7 +189,16 @@ def cfd(arr, dt, **kwargs):
     return t0
 
 def triggers(arr, dt, **kwargs):
-    ''' apply cfd to each row of arr (2D) '''
+    ''' Apply cfd to each row of arr (2D).
+        
+        return:
+            1D numpy array
+        
+        defaults:
+            scale = 0.8
+            offset = 1.4E-8
+            threshold = 0.04
+    '''
     # apply cfd
     trigs = np.apply_along_axis(cfd, 1, arr, dt, **kwargs)
     return trigs
@@ -139,42 +209,70 @@ def triggers(arr, dt, **kwargs):
     ----------------
 '''
 
-def integral(arr, dt, t0, lims, corr=True):
-    ''' integrate arr (1D) between bounds A and B '''
-    a, b = lims
+def integral(arr, dt, t0, limits, **kwargs):
+    ''' Simpsons integration of arr (1D) between limits=[a, b].
+    
+        return:
+            float
+            
+        defaults:
+            corr = True         # apply boundary corrections
+            debug = False       # fail quietly
+    '''
+    corr = kwargs.get('corr', True)
+    debug = kwargs.get('debug', False)
+    a, b, = limits
     ix_a = (a + t0)/dt
     ix_b = (b + t0)/dt
-    if ix_b <= ix_a:
+    if b <= a:
         raise ValueError("upper integration limit should be higher than lower limit.")
-    ab = integrate.simps(arr[ceil(ix_a):ceil(ix_b)+1], None, dt)
-    if corr:
-        # boundary corrections
-        corr1 = (arr[ceil(ix_a)]+arr[ceil(ix_a)-1])*(ceil(ix_a)-ix_a)*dt/2
-        corr2 = (arr[ceil(ix_b)+1]+arr[ceil(ix_b)])*(ceil(ix_b)-ix_b)*dt/2 
-        ab = ab + corr1 - corr2
+    try:
+        ab = integrate.simps(arr[ceil(ix_a):ceil(ix_b)+1], None, dt)
+        if corr:
+            # boundary corrections
+            corr1 = (arr[ceil(ix_a)]+arr[ceil(ix_a)-1])*(ceil(ix_a)-ix_a)*dt/2.0
+            corr2 = (arr[ceil(ix_b)+1]+arr[ceil(ix_b)])*(ceil(ix_b)-ix_b)*dt/2.0 
+            ab = ab + corr1 - corr2
+    except:
+        if not debug:
+            # fail quietly
+            ab = np.nan
+        else:
+            print("debug: cfd is probably triggering in noise, t0: ", str(t0))
+            raise
     return ab
 
 def dfrac(arr, dt, t0, **kwargs):
-    ''' calculate the delayed fraction (BC/AC) for arr (1D) '''
-    lims = kwargs.get('lims', [-1E-8, 3.5E-8, 6.0E-7])
-    corr = kwargs.get('corr', True)
-    AC = integral(arr, dt, t0, [lims[0], lims[2]], corr)
-    BC = integral(arr, dt, t0, [lims[1], lims[2]], corr)
+    ''' Calculate the delayed fraction (DF) (int B->C/ int A->C) for arr (1D).
+        
+        return:
+            AC, BC, DF
+        
+        defaults:
+            limits = [-1.0E-8, 3.5E-8, 6.0E-7]      # ABC
+            corr = True                           # apply boundary corrections
+    '''
+    lims = kwargs.pop('limits', [-1.0E-8, 3.5E-8, 6.0E-7])
+    AC = integral(arr, dt, t0, [lims[0], lims[2]], **kwargs)
+    BC = integral(arr, dt, t0, [lims[1], lims[2]], **kwargs)
     DF = BC/AC
     return AC, BC, DF
 
 def sspals_1D(arr, dt, **kwargs):
     ''' Calculate the trigger time (cfd) and delayed fraction (BC/AC) for
-        arr (1D).  Return np.array([(t0, AC, BC, DF)]).
-           
-        Defaults:
+        arr (1D).  
+        
+        return:
+            np.array([(t0, AC, BC, DF)])
+        
+        defaults:
             # cfd
             scale = 0.8
             offset = 1.4E-8
             threshold = 0.04
             
             # delayed fraction ABC
-            lims=[-1.0E-8, 3.5E-8, 6.0E-7]                
+            limits = [-1.0E-8, 3.5E-8, 6.0E-7]                
     '''
     dtype=[('t0','float64'),('AC','float64'),('BC','float64'),('DF','float64')]
     t0 = cfd(arr, dt, **kwargs)
@@ -188,16 +286,24 @@ def sspals_1D(arr, dt, **kwargs):
 def sspals(arr, dt, **kwargs):
     ''' Apply sspals_1D to each row or arr (2D).
     
-        Defaults:
-            drop_na = True       # remove empty rows
+        return:
+            pandas.DataFrame
             
-            # cfd
-            scale = 0.8
+            columns=[('t0','float64'),
+                     ('AC','float64'),
+                     ('BC','float64'),
+                     ('DF','float64')]
+    
+        defaults:
+            drop_na = True                     # remove empty rows
+                                             
+            scale = 0.8                        # cfd
             offset = 1.4E-8
             threshold = 0.04
             
-            # delayed fraction ABC
-            lims=[-1.0E-8, 3.5E-8, 6.0E-7]  
+            limits=[-1.0E-8, 3.5E-8, 6.0E-7]   # delayed fraction ABC
+            
+            debug = False                      # nans in output? try debug=True.
     '''
     dropna = kwargs.get('dropna', False)
     dfracs = pd.DataFrame(np.apply_along_axis(sspals_1D, 1, arr, dt, **kwargs)[:,0])
@@ -212,7 +318,10 @@ def sspals(arr, dt, **kwargs):
 '''
 
 def signal(A, Aerr, B, Berr, rescale=100.0):
-    ''' Calculate S = (B-A)/ B and uncertainty. Return S, S_err.
+    ''' Calculate S = (B-A)/ B and the uncertainty. 
+    
+        return:
+            S, S_err.
     '''
     S = rescale * (B - A) / B
     Serr = rescale * np.sqrt((Aerr / B)**2.0+(A*Berr/(B**2.0))**2.0)
