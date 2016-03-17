@@ -197,7 +197,7 @@ def triggers(arr, dt, **kwargs):
 #    delayed fraction
 #    ----------------
 
-def integral(arr, dt, t0, limits, **kwargs):
+def integral(arr, dt, t0, lim_a, lim_b, **kwargs):
     ''' Simpsons integration of arr (1D) between limits=[a, b].
 
         return:
@@ -209,7 +209,6 @@ def integral(arr, dt, t0, limits, **kwargs):
     '''
     corr = kwargs.get('corr', True)
     debug = kwargs.get('debug', False)
-    lim_a, lim_b, = limits
     ix_a = (lim_a + t0)/dt
     ix_b = (lim_b + t0)/dt
     if lim_b <= lim_a:
@@ -240,9 +239,9 @@ def dfrac(arr, dt, t0, **kwargs):
             limits = [-1.0E-8, 3.5E-8, 6.0E-7]      # ABC
             corr = True                           # apply boundary corrections
     '''
-    lims = kwargs.pop('limits', [-1.0E-8, 3.5E-8, 6.0E-7])
-    int_ac = integral(arr, dt, t0, [lims[0], lims[2]], **kwargs)
-    int_bc = integral(arr, dt, t0, [lims[1], lims[2]], **kwargs)
+    lims = kwargs.get('limits', [-1.0E-8, 3.5E-8, 6.0E-7])
+    int_ac = integral(arr, dt, t0, lims[0], lims[2], **kwargs)
+    int_bc = integral(arr, dt, t0, lims[1], lims[2], **kwargs)
     df = int_bc/int_ac
     return int_ac, int_bc, df
 
@@ -308,7 +307,7 @@ def signal(a_val, a_err, b_val, b_err, rescale=100.0):
 
         return:
             rescale * (S, S_err)
-        
+
         default:
             rescale = 100.0
     '''
