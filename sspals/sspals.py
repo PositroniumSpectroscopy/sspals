@@ -15,28 +15,28 @@ import pandas as pd
 #    simulate SSPALS
 #    ---------------
 
-def sim(t, amp=1, sigma=2.0E-9, eff=0.3, tau_Ps=1.420461E-7, tau_d=1.0E-8):
-    ''' Approximate a realistic SSPALS spectra, f(t).
+def sim(arr, amp=1, sigma=2.0E-9, eff=0.3, tau_Ps=1.420461E-7, tau_d=1.0E-8):
+    ''' Approximate a realistic SSPALS spectra, f(t), where arr is an array of 't' (in seconds).
 
-        Gaussian(A, sigma) implantation time distribution with formation of Ps,
+        Gaussian(A, sigma) implantation time distribution and formation of o-Ps,
         convolved with detector function.
 
         return:
             f(t)
 
         defaults:
-            amp = 1                     # Gaussian amplitude
+            amp = 1                   # Gaussian amplitude
             sigma = 2 ns              # Gaussian width
             eff = 0.3                 # o-Ps re-emmission efficiency
             tau_Ps = 142.046 ns       # o-Ps lifetime
             tau_d = 10 ns             # detector decay time
 
     '''
-    return -amp * np.exp(-t *(2.0/tau_d + 1.0/tau_Ps))/ (2 * (tau_d - tau_Ps)) * \
-           (eff * tau_d * np.exp((2.0*t/ tau_d + sigma**2.0/(2.0 * tau_Ps**2.0))) * \
-           (1.0 + erf((t*tau_Ps - sigma**2.0)/(np.sqrt(2.0) * sigma * tau_Ps))) - \
+    return -amp * np.exp(-arr *(2.0/tau_d + 1.0/tau_Ps))/ (2 * (tau_d - tau_Ps)) * \
+           (eff * tau_d * np.exp((2.0*arr/ tau_d + sigma**2.0/(2.0 * tau_Ps**2.0))) * \
+           (1.0 + erf((arr*tau_Ps - sigma**2.0)/(np.sqrt(2.0) * sigma * tau_Ps))) - \
            (tau_d + tau_Ps*(eff - 1.0)) * np.exp((sigma**2.0/(2.0*tau_d**2.0)) + \
-           t*(1.0/tau_d + 1.0/tau_Ps)) * (1.0 + erf((t*tau_d-sigma**2.0) / \
+           arr*(1.0/tau_d + 1.0/tau_Ps)) * (1.0 + erf((arr*tau_d-sigma**2.0) / \
            (np.sqrt(2.0) * sigma * tau_d))))
 
 #    ------------
@@ -66,7 +66,7 @@ def saturated(arr):
     return sat
 
 def splice(high, low):
-    ''' Splice together the hi and low gain values of a 2D dataset (swap saturated sections
+    ''' Splice together the high and low gain values of a 2D dataset (swap saturated sections
         in the high-gain channel for the corresponding values in the low-gain channel).
 
         return:
@@ -113,7 +113,7 @@ def validate(arr, **kwargs):
 #    ------------------------------
 
 def chmx(high, low, **kwargs):
-    ''' Remove zero offset from hi and low gain data, invert and splice
+    ''' Remove zero offset from high and low gain data, invert and splice
         together by swapping saturated values from the hi-gain channel
         for those from the low-gain channel.  Apply along rows of 2D arrays.
 
@@ -205,7 +205,7 @@ def integral(arr, dt, t0, lim_a, lim_b, **kwargs):
 
         defaults:
             corr = True         # apply boundary corrections
-            debug = False       # fail quietly
+            debug = False       # fail quietly, or not if True
     '''
     corr = kwargs.get('corr', True)
     debug = kwargs.get('debug', False)
@@ -237,12 +237,12 @@ def dfrac(arr, dt, t0, **kwargs):
 
         defaults:
             limits = [-1.0E-8, 3.5E-8, 6.0E-7]      # ABC
-            corr = True                           # apply boundary corrections
+            corr = True                             # apply boundary corrections
     '''
     lims = kwargs.get('limits', [-1.0E-8, 3.5E-8, 6.0E-7])
     int_ac = integral(arr, dt, t0, lims[0], lims[2], **kwargs)
     int_bc = integral(arr, dt, t0, lims[1], lims[2], **kwargs)
-    df = int_bc/int_ac
+    df = int_bc / int_ac
     return int_ac, int_bc, df
 
 def sspals_1D(arr, dt, **kwargs):
@@ -253,13 +253,12 @@ def sspals_1D(arr, dt, **kwargs):
             np.array([(t0, AC, BC, DF)])
 
         defaults:
-            # cfd
-            cfd_scale = 0.8
+            cfd_scale = 0.8                       # cfd
             cfd_offset = 1.4E-8
             cfd_threshold = 0.04
 
-            # delayed fraction ABC
-            limits = [-1.0E-8, 3.5E-8, 6.0E-7]
+            limits = [-1.0E-8, 3.5E-8, 6.0E-7]    # delayed fraction ABC
+            corr = True                           # apply boundary corrections
     '''
     dtype = [('t0', 'float64'), ('AC', 'float64'), ('BC', 'float64'), ('DF', 'float64')]
     t0 = cfd(arr, dt, **kwargs)
@@ -289,6 +288,7 @@ def sspals(arr, dt, **kwargs):
             cfd_threshold = 0.04
 
             limits=[-1.0E-8, 3.5E-8, 6.0E-7]   # delayed fraction ABC
+            corr = True                        # apply boundary corrections
 
             debug = False                      # nans in output? try debug=True.
     '''
