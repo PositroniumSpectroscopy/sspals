@@ -80,7 +80,6 @@ def splice(high, low):
     arr = np.reshape(tmp, np.shape(high))
     return arr
 
-
 #    -------------
 #    validate data
 #    -------------

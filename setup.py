@@ -13,7 +13,7 @@ setup(name='sspals',
       license='BSD',
       packages=['sspals'],
       install_requires=[
-          'scipy',
+          'scipy>0.14',
       ],
       include_package_data=True,
       zip_safe=False)
