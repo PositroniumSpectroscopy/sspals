@@ -295,7 +295,7 @@ def sspals(arr, dt, **kwargs):
     dropna = kwargs.get('dropna', True)
     dfracs = pd.DataFrame(np.apply_along_axis(sspals_1D, 1, arr, dt, **kwargs)[:, 0])
     if dropna:
-        dfracs.dropna(axis=0, how='any')
+        dfracs = dfracs.dropna(axis=0, how='any')
     return dfracs
 
 #    -------
