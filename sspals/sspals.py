@@ -302,7 +302,7 @@ def sspals(arr, dt, **kwargs):
 #    -------
 
 def signal(a_val, a_err, b_val, b_err, rescale=100.0):
-    ''' Calculate S = (a - b)/ a and the uncertainty.
+    ''' Calculate S = (b - a)/ b and the uncertainty.
 
         return:
             rescale * (S, S_err)
@@ -311,5 +311,5 @@ def signal(a_val, a_err, b_val, b_err, rescale=100.0):
             rescale = 100.0
     '''
     sig = rescale * (b_val - a_val) / b_val
-    sig_err = rescale * np.sqrt((a_err / b_val)**2.0+(a_val*b_err/(b_val**2.0))**2.0)
+    sig_err = rescale * np.sqrt((a_err / b_val)**2.0 + (a_val*b_err/(b_val**2.0))**2.0)
     return sig, sig_err
