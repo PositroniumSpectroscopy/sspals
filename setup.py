@@ -5,8 +5,8 @@ def readme():
         return f.read()
 
 setup(name='sspals',
-      version='0.0.1',
-      description='for processing single-shot positron annihlation lifetime spectrscopy',
+      version='0.0.2',
+      description='for processing single-shot positron annihlation lifetime spectra',
       url='https://github.com/PositroniumSpectroscopy/sspals',
       author='Adam Deller',
       author_email='a.deller@ucl.ac.uk',
