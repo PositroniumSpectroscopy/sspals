@@ -5,7 +5,7 @@
     @author: Adam Deller
 """
 from __future__ import print_function, division
-from math import ceil
+from math import floor, ceil
 from scipy import integrate
 from scipy.special import erf                               # the error function
 import numpy as np
@@ -208,16 +208,16 @@ def integral(arr, dt, t0, lim_a, lim_b, **kwargs):
     '''
     corr = kwargs.get('corr', True)
     debug = kwargs.get('debug', False)
-    ix_a = (lim_a + t0)/dt
-    ix_b = (lim_b + t0)/dt
+    ix_a = int(ceil((lim_a + t0)/dt))
+    ix_b = int(ceil((lim_b + t0)/dt))
     if lim_b <= lim_a:
         raise ValueError("upper integration limit should be higher than lower limit.")
     try:
-        int_ab = integrate.simps(arr[ceil(ix_a):ceil(ix_b)+1], None, dt)
+        int_ab = integrate.simps(arr[ix_a:ix_b], None, dt)
         if corr:
             # boundary corrections
-            corr1 = (arr[ceil(ix_a)]+arr[ceil(ix_a)-1])*(ceil(ix_a)-ix_a)*dt/2.0
-            corr2 = (arr[ceil(ix_b)+1]+arr[ceil(ix_b)])*(ceil(ix_b)-ix_b)*dt/2.0
+            corr1 = (arr[ix_a] + arr[ix_a - 1])*(ix_a - (lim_a + t0)/dt)*dt/2.0
+            corr2 = (arr[ix_b] + arr[ix_b - 1])*(ix_b - (lim_b + t0)/dt)*dt/2.0
             int_ab = int_ab + corr1 - corr2
     except:
         if not debug:
@@ -308,7 +308,7 @@ def signal(a_val, a_err, b_val, b_err, rescale=100.0):
             rescale * (S, S_err)
 
         default:
-            rescale = 100.0
+            rescale = 100.0                # e.g., for percentage units.
     '''
     sig = rescale * (b_val - a_val) / b_val
     sig_err = rescale * np.sqrt((a_err / b_val)**2.0 + (a_val*b_err/(b_val**2.0))**2.0)
