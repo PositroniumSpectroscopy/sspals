@@ -7,7 +7,7 @@ Tested using Anaconda (Continuum Analytics) with Python 2.7 and 3.5.
 
 Package dependencies:
 
-* scipy
+* scipy, numpy, pandas
 
 ## Installation
 
