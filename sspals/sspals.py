@@ -130,8 +130,9 @@ def chmx(high, low, **kwargs):
     vtest = kwargs.get('validate', False)
     n_bsub = kwargs.get('n_bsub', 100)
     # remove offsets
-    high = sub_offset(high, n_bsub)[0]
-    low = sub_offset(low, n_bsub)[0]
+    if n_bsub > 0:
+        high = sub_offset(high, n_bsub)[0]
+        low = sub_offset(low, n_bsub)[0]
     # combine hi/low data
     arr = splice(high, low)
     if invert:
@@ -208,24 +209,27 @@ def integral(arr, dt, t0, lim_a, lim_b, **kwargs):
     '''
     corr = kwargs.get('corr', True)
     debug = kwargs.get('debug', False)
-    ix_a = int(ceil((lim_a + t0)/dt))
-    ix_b = int(ceil((lim_b + t0)/dt))
     if lim_b <= lim_a:
         raise ValueError("upper integration limit should be higher than lower limit.")
+    # fractional index
+    frac_a = (lim_a + t0) / dt
+    frac_b = (lim_b + t0) / dt
+    # nearest index
+    ix_a = int(round(frac_a))
+    ix_b = int(round(frac_b))
     try:
         int_ab = integrate.simps(arr[ix_a:ix_b], None, dt)
         if corr:
-            # boundary corrections
-            corr1 = (arr[ix_a] + arr[ix_a - 1])*(ix_a - (lim_a + t0)/dt)*dt/2.0
-            corr2 = (arr[ix_b] + arr[ix_b - 1])*(ix_b - (lim_b + t0)/dt)*dt/2.0
-            int_ab = int_ab + corr1 - corr2
+            # boundary corrections (trap rule)
+            corr_a = dt * (ix_a - frac_a) * (arr[int(floor(frac_a))] + arr[int(ceil(frac_a))]) / 2.0
+            corr_b = dt * (ix_b - frac_b) * (arr[int(floor(frac_b))] + arr[int(ceil(frac_b))]) / 2.0
+            int_ab = int_ab + corr_a - corr_b
     except:
         if not debug:
             # fail quietly
             int_ab = np.nan
         else:
-            print("debug: cfd is probably triggering in noise, t0: ", str(t0))
-            raise
+            raise Warning("debug: cfd is probably triggering in noise, t0: ", str(t0))
     return int_ab
 
 def dfrac(arr, dt, t0, **kwargs):
