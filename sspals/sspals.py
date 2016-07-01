@@ -259,7 +259,6 @@ def sspals_1D(arr, dt, **kwargs):
             cfd_scale = 0.8                       # cfd
             cfd_offset = 1.4E-8
             cfd_threshold = 0.04
-
             limits = [-1.0E-8, 3.5E-8, 6.0E-7]    # delayed fraction ABC
             corr = True                           # apply boundary corrections
     '''
@@ -285,14 +284,11 @@ def sspals(arr, dt, **kwargs):
 
         defaults:
             drop_na = False                    # remove empty rows
-
             cfd_scale = 0.8                    # cfd
             cfd_offset = 1.4E-8
             cfd_threshold = 0.04
-
             limits=[-1.0E-8, 3.5E-8, 6.0E-7]   # delayed fraction ABC
             corr = True                        # apply boundary corrections
-
             debug = False                      # nans in output? try debug=True.
     '''
     dropna = kwargs.get('dropna', True)
