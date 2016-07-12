@@ -161,6 +161,7 @@ def cfd(arr, dt, **kwargs):
     scale = kwargs.get('cfd_scale', 0.8)
     offset = kwargs.get('cfd_offset', 1.4E-8)
     threshold = kwargs.get('cfd_threshold', 0.04)
+    debug = kwargs.get('debug', False)
     # offset number of points
     sub = int(offset /dt)
     x = np.arange(len(arr)) * dt
@@ -175,7 +176,11 @@ def cfd(arr, dt, **kwargs):
         t0 = z[ix]*(x[ix]-x[ix+1])/(z[ix+1]-z[ix])+x[ix]
     else:
         # no triggers found
-        t0 = np.nan
+        if not debug:
+            # fail quietly
+            t0 = np.nan
+        else:
+            raise Warning("cfd failed to find a trigger.")
     return t0
 
 def triggers(arr, dt, **kwargs):
@@ -229,7 +234,7 @@ def integral(arr, dt, t0, lim_a, lim_b, **kwargs):
             # fail quietly
             int_ab = np.nan
         else:
-            raise Warning("debug: cfd is probably triggering in noise, t0: ", str(t0))
+            raise Warning("Unable to integrate spectra. Check bounday and cfd settings. debug: t0 = ", str(t0))
     return int_ab
 
 def dfrac(arr, dt, t0, **kwargs):
@@ -261,6 +266,7 @@ def sspals_1D(arr, dt, **kwargs):
             cfd_threshold = 0.04
             limits = [-1.0E-8, 3.5E-8, 6.0E-7]    # delayed fraction ABC
             corr = True                           # apply boundary corrections
+            debug = False                         # nans in output? try debug=True.
     '''
     dtype = [('t0', 'float64'), ('AC', 'float64'), ('BC', 'float64'), ('DF', 'float64')]
     t0 = cfd(arr, dt, **kwargs)
@@ -283,7 +289,7 @@ def sspals(arr, dt, **kwargs):
                      ('DF','float64')]
 
         defaults:
-            drop_na = False                    # remove empty rows
+            dropna = False                     # remove empty rows
             cfd_scale = 0.8                    # cfd
             cfd_offset = 1.4E-8
             cfd_threshold = 0.04
@@ -291,7 +297,7 @@ def sspals(arr, dt, **kwargs):
             corr = True                        # apply boundary corrections
             debug = False                      # nans in output? try debug=True.
     '''
-    dropna = kwargs.get('dropna', True)
+    dropna = kwargs.get('dropna', False)
     dfracs = pd.DataFrame(np.apply_along_axis(sspals_1D, 1, arr, dt, **kwargs)[:, 0])
     if dropna:
         dfracs = dfracs.dropna(axis=0, how='any')
