@@ -15,7 +15,7 @@ import pandas as pd
 #    simulate SSPALS
 #    ---------------
 
-def sim(arr, amp=1, sigma=2.0E-9, eff=0.3, tau_Ps=1.420461E-7, tau_d=1.0E-8):
+def sim(arr, amp=1.0, sigma=2.0E-9, eff=0.3, tau_Ps=1.420461E-7, tau_d=1.0E-8):
     ''' Approximate a realistic SSPALS spectra, f(t), where arr is an array of 't' (in seconds).
 
         Gaussian(A, sigma) implantation time distribution and formation of o-Ps,
@@ -25,10 +25,10 @@ def sim(arr, amp=1, sigma=2.0E-9, eff=0.3, tau_Ps=1.420461E-7, tau_d=1.0E-8):
             f(t)
 
         defaults:
-            amp = 1                   # Gaussian amplitude
+            amp = 1.0                 # Gaussian amplitude
             sigma = 2 ns              # Gaussian width
             eff = 0.3                 # o-Ps re-emmission efficiency
-            tau_Ps = 142.046 ns       # o-Ps lifetime
+            tau_Ps = 142.0461 ns      # o-Ps lifetime
             tau_d = 10 ns             # detector decay time
 
     '''
