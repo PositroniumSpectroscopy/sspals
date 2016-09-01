@@ -15,7 +15,7 @@ import pandas as pd
 #    simulate SSPALS
 #    ---------------
 
-def sim(arr, V_0=1.0E-8, sigma=2.0E-9, eff=0.3, tau=1.420461E-7, kappa=1.0E-8):
+def sim(arr, amp=0.1, sigma=2.0E-9, eff=0.3, tau=1.420461E-7, kappa=1.0E-8, **kwargs):
     ''' Approximate a realistic SSPALS spectra, f(t), where arr is an array of 't' (in seconds).
 
         Gaussian(V_0, sigma) implantation time distribution and formation of o-Ps,
@@ -25,19 +25,26 @@ def sim(arr, V_0=1.0E-8, sigma=2.0E-9, eff=0.3, tau=1.420461E-7, kappa=1.0E-8):
             f(t)
 
         defaults:
-            V_0 = 1E-8                # scaling factor
+            amp = 0.1                 # arb. scaling factor
             sigma = 2 ns              # Gaussian width
             eff = 0.3                 # o-Ps re-emmission efficiency
             tau = 142.0461 ns         # o-Ps lifetime
             kappa = 10 ns             # detector decay time
 
+        kwargs:
+            norm = False              # normalise version
+
     '''
-    return V_0 / (2.0 * kappa * (tau - kappa)) * \
+    norm = kwargs.get('norm', False)
+    if norm:
+        amp = amp / (tau - kappa)
+    # sim.
+    return amp / 2.0 * \
            np.exp(-arr *(1.0 / tau + 1.0 / kappa)) * ( \
-           eff * kappa * \
+           eff * \
            np.exp((sigma**2.0/(2.0 * tau**2.0)) + arr/ kappa) * \
            (1.0 + erf((arr * tau - sigma**2.0)/(np.sqrt(2.0) * sigma * tau))) - \
-           (kappa + tau * (eff - 1)) * \
+           (1 + tau * (eff - 1) / kappa) * \
            np.exp((sigma**2.0/(2.0 * kappa**2.0)) + arr/ tau) * \
            (1.0 + erf((arr * kappa - sigma**2.0)/(np.sqrt(2.0) * sigma * kappa))))
 
