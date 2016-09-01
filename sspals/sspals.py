@@ -15,29 +15,31 @@ import pandas as pd
 #    simulate SSPALS
 #    ---------------
 
-def sim(arr, amp=1.0, sigma=2.0E-9, eff=0.3, tau_Ps=1.420461E-7, tau_d=1.0E-8):
+def sim(arr, V_0=1.0E-8, sigma=2.0E-9, eff=0.3, tau=1.420461E-7, kappa=1.0E-8):
     ''' Approximate a realistic SSPALS spectra, f(t), where arr is an array of 't' (in seconds).
 
-        Gaussian(A, sigma) implantation time distribution and formation of o-Ps,
-        convolved with detector function.
+        Gaussian(V_0, sigma) implantation time distribution and formation of o-Ps,
+        convolved with detector function -- see below.
 
         return:
             f(t)
 
         defaults:
-            amp = 1.0                 # Gaussian amplitude
+            V_0 = 1E-8                # scaling factor
             sigma = 2 ns              # Gaussian width
             eff = 0.3                 # o-Ps re-emmission efficiency
-            tau_Ps = 142.0461 ns      # o-Ps lifetime
-            tau_d = 10 ns             # detector decay time
+            tau = 142.0461 ns         # o-Ps lifetime
+            kappa = 10 ns             # detector decay time
 
     '''
-    return -amp * np.exp(-arr *(2.0/tau_d + 1.0/tau_Ps))/ (2 * (tau_d - tau_Ps)) * \
-           (eff * tau_d * np.exp((2.0*arr/ tau_d + sigma**2.0/(2.0 * tau_Ps**2.0))) * \
-           (1.0 + erf((arr*tau_Ps - sigma**2.0)/(np.sqrt(2.0) * sigma * tau_Ps))) - \
-           (tau_d + tau_Ps*(eff - 1.0)) * np.exp((sigma**2.0/(2.0*tau_d**2.0)) + \
-           arr*(1.0/tau_d + 1.0/tau_Ps)) * (1.0 + erf((arr*tau_d-sigma**2.0) / \
-           (np.sqrt(2.0) * sigma * tau_d))))
+    return V_0 / (2.0 * kappa * (tau - kappa)) * \
+           np.exp(-arr *(1.0 / tau + 1.0 / kappa)) * ( \
+           eff * kappa * \
+           np.exp((sigma**2.0/(2.0 * tau**2.0)) + arr/ kappa) * \
+           (1.0 + erf((arr * tau - sigma**2.0)/(np.sqrt(2.0) * sigma * tau))) - \
+           (kappa + tau * (eff - 1)) * \
+           np.exp((sigma**2.0/(2.0 * kappa**2.0)) + arr/ tau) * \
+           (1.0 + erf((arr * kappa - sigma**2.0)/(np.sqrt(2.0) * sigma * kappa))))
 
 #    ------------
 #    process data
