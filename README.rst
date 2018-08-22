@@ -4,8 +4,8 @@ sspals
 python tools for analysing single-shot positron annihilation lifetime
 spectra
 
-.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.61489.svg
-   :target: https://doi.org/10.5281/zenodo.61489
+.. image:: https://zenodo.org/badge/49681355.svg
+   :target: https://zenodo.org/badge/latestdoi/49681355
 
 Prerequisites
 -------------
