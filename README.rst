@@ -30,12 +30,14 @@ alternatively, try the development version
 ::
 
     git clone https://github.com/PositroniumSpectroscopy/sspals
+    cd sspals
 
 and then run
 
 ::
 
     python setup.py install
+    pytest
 
 About
 -----
