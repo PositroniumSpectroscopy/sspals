@@ -3,12 +3,13 @@
 pytest
 '''
 import numpy as np
-import sspals
+from sspals.sim import sim
+from sspals.core import sub_offset, chmx, cfd, validate, sspals_1D
 
 def test_sub():
     """ background subtraction of the mean value of first 3 elements of 1-10.
     """
-    assert (sspals.sub_offset(np.array([np.arange(1.0, 10.0)]), 3)[0][0] == \
+    assert (sub_offset(np.array([np.arange(1.0, 10.0)]), 3)[0][0] == \
             [-1.0, 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0]).all()
 
 def test_chmx():
@@ -16,26 +17,27 @@ def test_chmx():
     """
     high = np.array([[0.1, 0.6, 0.5, 3, 3, 3]])
     low = np.array([[0.0, 1.1, 2.1, 3, 4, 5]])
-    assert (sspals.chmx(high, low, n_bsub=0, invert=False) == \
+    assert (chmx(high, low, n_bsub=0, invert=False) == \
             [[0.0, 0.6, 0.5, 3.0, 4.0, 5.0]]).all()
 
 def test_cfd():
     """ constant fraction discriminator test on linear ramp.
     """
     x_vals = np.arange(1, 10)
-    assert sspals.cfd(x_vals, 1, cfd_offset=2, cfd_threshold=1,
+    assert cfd(x_vals, 1, cfd_offset=2, cfd_threshold=1,
                       cfd_scale=0.6) == 2.0
 def test_validate():
     """ check validation -> ignore empty rows.
     """
     arr = np.array([[0.0, 2.0], [-2.0, -1.5], [0.0, 10.0]])
-    assert (sspals.validate(arr, min_range=0.5) == \
+    assert (validate(arr, min_range=0.5) == \
             np.array([[0.0, 2.0], [0.0, 10.0]])).all()
 
 def test_sspals():
     """ simulate sspals and measure the delayed fraction.
     """
+    limits = [-1.0E-8, 3.5E-8, 6.0E-7]
     x_vals = np.arange(-100, 600, 1) * 1e-9
-    y_vals = sspals.sim(x_vals, amp=1.0, sigma=2e-09, eff=0.4,
+    y_vals = sim(x_vals, amp=1.0, sigma=2e-09, eff=0.4,
                         tau_Ps=1.420461e-07, tau_d=1e-08)
-    assert round(sspals.sspals_1D(y_vals, 1e-9)[0]['DF'], 6) == 0.354113
+    assert round(sspals_1D(y_vals, 1e-9, limits)[0]['DF'], 6) == 0.354113
