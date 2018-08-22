@@ -4,12 +4,13 @@
     Copyright (c) 2015-2018, UNIVERSITY COLLEGE LONDON
     @author: Adam Deller
 """
-from __future__ import print_function, division
+from __future__ import division
 from scipy.special import erf                               # the error function
 import numpy as np
 
 def sim(t, amp=1.0, sigma=2.0E-9, eff=0.3, tau=1.420461E-7, kappa=1.0E-8, **kwargs):
-    ''' Approximate a realistic SSPALS spectra, f(t), where t is an array of time values (in seconds).
+    ''' Approximate a realistic SSPALS spectra, f(t), where t is an array of time values
+        (in seconds).
 
         Gaussian(V_0, sigma) implantation time distribution and formation of o-Ps,
         convolved with detector function -- see below.
@@ -25,7 +26,7 @@ def sim(t, amp=1.0, sigma=2.0E-9, eff=0.3, tau=1.420461E-7, kappa=1.0E-8, **kwar
         kwargs:
             norm=True               # normalise to max value
 
-        returns:
+        return:
             numpy.array()
 
     '''

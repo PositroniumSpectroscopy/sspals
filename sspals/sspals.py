@@ -4,13 +4,13 @@
     Copyright (c) 2015-2018, UNIVERSITY COLLEGE LONDON
     @author: Adam Deller
 """
-from __future__ import print_function, division
+from __future__ import division
 from math import floor, ceil
 from scipy import integrate
 import numpy as np
 import pandas as pd
 from .chmx import chmx
-from .cfd import cfd_1D
+from .cfd import cfd_1d
 
 #    ----------------
 #    delayed fraction
@@ -29,8 +29,8 @@ def integral(arr, dt, t0, lim_a, lim_b, **kwargs):
         kwargs:
             corr = True         # apply boundary corrections
             debug = False       # fail quietly, or not if True
-        
-        returns:
+
+        return:
             float64
     '''
     corr = kwargs.get('corr', True)
@@ -49,12 +49,14 @@ def integral(arr, dt, t0, lim_a, lim_b, **kwargs):
             corr_a = dt * (ix_a - frac_a) * (arr[int(floor(frac_a))] + arr[int(ceil(frac_a))]) / 2.0
             corr_b = dt * (ix_b - frac_b) * (arr[int(floor(frac_b))] + arr[int(ceil(frac_b))]) / 2.0
             int_ab = int_ab + corr_a - corr_b
-    except:
+    except IndexError:
         if not debug:
             # fail quietly
             int_ab = np.nan
         else:
             raise
+    except:
+        raise
     return int_ab
 
 def dfrac(arr, dt, t0, limits, **kwargs):
@@ -69,8 +71,8 @@ def dfrac(arr, dt, t0, limits, **kwargs):
         kwargs:
             corr = True         # apply boundary corrections
             debug = False       # fail quietly, or not if True
-        
-        returns:
+
+        return:
             AC :: float64, BC :: float64, DF :: float64
     '''
     int_ac = integral(arr, dt, t0, limits[0], limits[2], **kwargs)
@@ -78,7 +80,7 @@ def dfrac(arr, dt, t0, limits, **kwargs):
     df = int_bc / int_ac
     return int_ac, int_bc, df
 
-def sspals_1D(arr, dt, limits, **kwargs):
+def sspals_1d(arr, dt, limits, **kwargs):
     ''' Calculate the trigger time (cfd) and delayed fraction (BC / AC) for
         arr (1D).
 
@@ -94,10 +96,10 @@ def sspals_1D(arr, dt, limits, **kwargs):
             corr=True
             debug=False
 
-        returns:
+        return:
             (t0, AC, BC, DF)
     '''
-    t0 = cfd_1D(arr, dt, **kwargs)
+    t0 = cfd_1d(arr, dt, **kwargs)
     if not np.isnan(t0):
         int_ac, int_bc, df = dfrac(arr, dt, t0, limits, **kwargs)
         return (t0, int_ac, int_bc, df)
@@ -119,13 +121,13 @@ def sspals(arr, dt, limits, axis=1, **kwargs):
             cfd_threshold=0.04
             corr=True
             debug=False
-            dropna = False 
-            
-        returns:
+            dropna = False
+
+        return:
             pandas.DataFrame(columns=[t0, AC, BC, DF])
     '''
     dropna = kwargs.get('dropna', False)
-    data = np.apply_along_axis(sspals_1D, axis, arr, dt, limits, **kwargs)
+    data = np.apply_along_axis(sspals_1d, axis, arr, dt, limits, **kwargs)
     if axis == 0:
         data = data.T
     dfracs = pd.DataFrame(data, columns=['t0', 'AC', 'BC', 'DF'])
@@ -155,8 +157,8 @@ def chmx_sspals(high, low, dt, axis=1, **kwargs):
             debug=False                        # nans in output? try debug=True.
             trad=False                         # return (t0, AC, DC, DF)
             index_name=measurement             # pd.DataFrame.index.name
-        
-        returns:
+
+        return:
             pd.DataFrame(['t0', 'fd', 'total']))
     """
     trad = kwargs.get('trad', False)
@@ -185,7 +187,7 @@ def signal(a_val, a_err, b_val, b_err, rescale=100.0):
         kwargs:
             rescale = 100.0    # e.g., for percentage units.
 
-        returns:
+        return:
             rescale * (S, S_err)
     '''
     sig = rescale * (b_val - a_val) / b_val

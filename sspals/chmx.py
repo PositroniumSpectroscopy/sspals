@@ -4,7 +4,7 @@
     Copyright (c) 2015-2018, UNIVERSITY COLLEGE LONDON
     @author: Adam Deller
 """
-from __future__ import print_function, division
+from __future__ import division
 import numpy as np
 
 #    ------------
@@ -19,7 +19,7 @@ def sub_offset(arr, n_bsub=100, axis=1):
             n_bsub=100
             axis=1
 
-        returns:
+        return:
             (arr - offset) :: numpy.array(dims=2), offset :: float64
     '''
     offset = np.array([np.mean(arr[:, :n_bsub], axis=axis)])
@@ -28,11 +28,11 @@ def sub_offset(arr, n_bsub=100, axis=1):
 
 def saturated(arr):
     ''' Find where arr (1D) is equal to its own max and min value.
-        
+
         args:
             arr                   # numpy.array()
-        
-        returns:
+
+        return:
             numpy.array(dims=1, dtype=bool)
     '''
     sat = np.logical_or(arr == arr.max(), arr == arr.min())
@@ -47,7 +47,7 @@ def splice(high, low, axis=1):
             low                    # numpy.array(dims=2)
             axis=1                 # int
 
-        returns:
+        return:
             numpy.array(dims=2)
     '''
     mask = np.apply_along_axis(saturated, axis, high)
@@ -68,8 +68,8 @@ def val_test(arr, min_range):
         args:
             arr                   # numpy.array()
             min_range             # float64
-        
-        returns:
+
+        return:
             bool
     '''
     rng = abs(arr.max() - arr.min())
@@ -82,8 +82,8 @@ def validate(arr, min_range, axis=1):
             arr                   # numpy.array()
             min_range             # float64
             axis=1                # int
-        
-        returns:
+
+        return:
             numpy.array(dims=2)
     '''
     mask = np.apply_along_axis(val_test, axis, arr, min_range)
@@ -109,7 +109,7 @@ def chmx(high, low, axis=1, **kwargs):
             min_range=None         # remove rows where vertical range < min_range
             axis=1                 # int
 
-        returns:
+        return:
             numpy.array(dims=2)
     '''
     # options

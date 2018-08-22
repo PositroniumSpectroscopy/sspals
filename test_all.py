@@ -5,8 +5,8 @@ pytest
 import numpy as np
 from sspals.sim import sim
 from sspals.chmx import sub_offset, validate, chmx
-from sspals.cfd import cfd_1D
-from sspals.sspals import sspals_1D
+from sspals.cfd import cfd_1d
+from sspals.sspals import sspals_1d
 
 def test_sub():
     """ background subtraction of the mean value of first 3 elements of 1-10.
@@ -25,7 +25,7 @@ def test_cfd():
     """ constant fraction discriminator test on linear ramp.
     """
     x_vals = np.arange(1, 10)
-    assert cfd_1D(x_vals, 1, cfd_offset=2, cfd_threshold=1, cfd_scale=0.6) == 2.0
+    assert cfd_1d(x_vals, 1, cfd_offset=2, cfd_threshold=1, cfd_scale=0.6) == 2.0
 def test_validate():
     """ check validation -> ignore empty rows.
     """
@@ -38,4 +38,4 @@ def test_sspals():
     limits = [-1.0E-8, 3.5E-8, 6.0E-7]
     x_vals = np.arange(-100, 600, 1) * 1e-9
     y_vals = sim(x_vals, amp=1.0, sigma=2e-09, eff=0.4, tau_Ps=1.420461e-07, tau_d=1e-08)
-    assert round(sspals_1D(y_vals, 1e-9, limits)[3], 6) == 0.354113
+    assert round(sspals_1d(y_vals, 1e-9, limits)[3], 6) == 0.354113

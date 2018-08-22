@@ -4,10 +4,10 @@
     Copyright (c) 2015-2018, UNIVERSITY COLLEGE LONDON
     @author: Adam Deller
 """
-from __future__ import print_function, division
+from __future__ import division
 import numpy as np
 
-def cfd_1D(arr, dt, **kwargs):
+def cfd_1d(arr, dt, **kwargs):
     ''' Apply cfd algorithm to arr (1D) to find trigger time (t0).
 
         args:
@@ -20,7 +20,7 @@ def cfd_1D(arr, dt, **kwargs):
             cfd_threshold=0.04
             debug=False
 
-        returns:
+        return:
             float64
     '''
     # options
@@ -64,7 +64,7 @@ def cfd(arr, dt, axis=1, **kwargs):
             cfd_threshold=0.04
             debug=False
 
-        returns:
+        return:
             numpy.array(dims=1)
     '''
     invert = kwargs.get('invert', False)
