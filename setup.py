@@ -27,8 +27,9 @@ CLASSIFIERS = [
 ]
 
 setup(name='sspals',
-      version='0.0.7',
+      version='0.0.8',
       description='process single-shot positron annihlation lifetime spectra',
+      long_description=readme(),
       url='https://github.com/PositroniumSpectroscopy/sspals',
       author='Adam Deller',
       author_email='a.deller@ucl.ac.uk',
