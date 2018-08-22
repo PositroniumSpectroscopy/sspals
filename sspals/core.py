@@ -187,7 +187,7 @@ def triggers(arr, dt, axis=1, **kwargs):
             axis=1                # int
 
         kwargs:
-            invert=True
+            invert=False
             cfd_scale=0.8
             cfd_offset=1.4e-8
             cfd_threshold=0.04
@@ -196,12 +196,11 @@ def triggers(arr, dt, axis=1, **kwargs):
         returns:
             numpy.array(dims=1)
     '''
-    invert = kwargs.get('invert', True)
+    invert = kwargs.get('invert', False)
     if invert:
         arr = np.negative(arr)
     # apply cfd
-    trigs = np.apply_along_axis(cfd, axis, arr, dt, **kwargs)
-    return trigs
+    return np.apply_along_axis(cfd, axis, arr, dt, **kwargs)
 
 #    ----------------
 #    delayed fraction
@@ -286,16 +285,14 @@ def sspals_1D(arr, dt, limits, **kwargs):
             debug=False
 
         returns:
-            np.array([(t0, AC, BC, DF)])
+            (t0, AC, BC, DF)
     '''
-    dtype = [('t0', 'float64'), ('AC', 'float64'), ('BC', 'float64'), ('DF', 'float64')]
     t0 = cfd(arr, dt, **kwargs)
     if not np.isnan(t0):
         int_ac, int_bc, df = dfrac(arr, dt, t0, limits, **kwargs)
-        output = np.array([(t0, int_ac, int_bc, df)], dtype=dtype)
+        return (t0, int_ac, int_bc, df)
     else:
-        output = np.array([(np.nan, np.nan, np.nan, np.nan)], dtype=dtype)
-    return output
+        return (np.nan, np.nan, np.nan, np.nan)
 
 def sspals(arr, dt, limits, axis=1, **kwargs):
     ''' Apply sspals_1D to each row of arr (2D).
@@ -318,7 +315,10 @@ def sspals(arr, dt, limits, axis=1, **kwargs):
             pandas.DataFrame(columns=[t0, AC, BC, DF])
     '''
     dropna = kwargs.get('dropna', False)
-    dfracs = pd.DataFrame(np.apply_along_axis(sspals_1D, axis, arr, dt, limits, **kwargs)[:, 0])
+    data = np.apply_along_axis(sspals_1D, axis, arr, dt, limits, **kwargs)
+    if axis == 0:
+        data = data.T
+    dfracs = pd.DataFrame(data, columns=['t0', 'AC', 'BC', 'DF'])
     if dropna:
         dfracs = dfracs.dropna(axis=0, how='any')
     return dfracs

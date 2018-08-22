@@ -40,4 +40,4 @@ def test_sspals():
     x_vals = np.arange(-100, 600, 1) * 1e-9
     y_vals = sim(x_vals, amp=1.0, sigma=2e-09, eff=0.4,
                         tau_Ps=1.420461e-07, tau_d=1e-08)
-    assert round(sspals_1D(y_vals, 1e-9, limits)[0]['DF'], 6) == 0.354113
+    assert round(sspals_1D(y_vals, 1e-9, limits)[3], 6) == 0.354113
