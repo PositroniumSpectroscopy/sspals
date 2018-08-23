@@ -110,24 +110,24 @@ def sspals(arr, dt, limits, axis=1, **kwargs):
     ''' Apply sspals_1D to each row of arr (2D).
 
         args:
-            arr                   # numpy.array(dims=1)
-            dt                    # float64
-            limits                # (A, B, C)
-            axis=1                # int
+            arr                    # numpy.array(dims=1)
+            dt                     # float64
+            limits                 # (A, B, C)
+            axis=1                 # int
 
         kwargs:
             cfd_scale=0.8
             cfd_offset=1.4e-8
             cfd_threshold=0.04
-            corr=True
-            debug=False
-            dropna=False
-            name="measurement"
+            corr=True              # apply boundary corrections
+            dropna=False           # remove empty rows
+            debug=False            # nans in output? try debug=True.
+            name=None              # pd.DataFrame.index.name
 
         return:
             pandas.DataFrame(columns=[t0, AC, BC, DF])
     '''
-    name = kwargs.get('name', 'measurement')
+    name = kwargs.get('name', None)
     dropna = kwargs.get('dropna', False)
     data = np.apply_along_axis(sspals_1d, axis, arr, dt, limits, **kwargs)
     if axis == 0:
@@ -161,7 +161,7 @@ def chmx_sspals(high, low, dt, limits, axis=1, **kwargs):
             dropna=False                       # remove empty rows
             debug=False                        # nans in output? try debug=True.
             trad=False                         # return (t0, AC, BC, DF)
-            name="measurement"                 # pd.DataFrame.index.name
+            name=None                          # pd.DataFrame.index.name
 
         return:
             pd.DataFrame(['t0', 'fd', 'total']))
