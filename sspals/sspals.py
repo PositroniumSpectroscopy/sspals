@@ -40,10 +40,10 @@ def integral(arr, dt, t0, lim_a, lim_b, **kwargs):
     frac_a = (lim_a + t0) / dt
     frac_b = (lim_b + t0) / dt
     # nearest index
-    ix_a = int(round(frac_a))
-    ix_b = int(round(frac_b))
+    ix_a = round(frac_a)
+    ix_b = round(frac_b)
     try:
-        int_ab = integrate.simps(arr[ix_a:ix_b], None, dt)
+        int_ab = integrate.simps(arr[int(ix_a) : int(ix_b)], None, dt)
         if corr:
             # boundary corrections (trap rule)
             corr_a = dt * (ix_a - frac_a) * (arr[int(floor(frac_a))] + arr[int(ceil(frac_a))]) / 2.0
@@ -132,12 +132,12 @@ def sspals(arr, dt, limits, axis=1, **kwargs):
     data = np.apply_along_axis(sspals_1d, axis, arr, dt, limits, **kwargs)
     if axis == 0:
         data = data.T
-    dfracs = pd.DataFrame(data, columns=['t0', 'AC', 'BC', 'DF'])
+    df = pd.DataFrame(data, columns=['t0', 'AC', 'BC', 'DF'])
     if name is not None:
         df.index.rename(name, inplace=True)
     if dropna:
-        dfracs = dfracs.dropna(axis=0, how='any')
-    return dfracs
+        df = df.dropna(axis=0, how='any')
+    return df
 
 def chmx_sspals(high, low, dt, limits, axis=1, **kwargs):
     """ Combine high and low gain data (chmx).  Re-analyse each to find t0 (cfd
@@ -160,7 +160,7 @@ def chmx_sspals(high, low, dt, limits, axis=1, **kwargs):
             corr=True                          # apply boundary corrections
             dropna=False                       # remove empty rows
             debug=False                        # nans in output? try debug=True.
-            trad=False                         # return (t0, AC, DC, DF)
+            trad=False                         # return (t0, AC, BC, DF)
             name="measurement"                 # pd.DataFrame.index.name
 
         return:
