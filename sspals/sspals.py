@@ -135,7 +135,7 @@ def sspals(arr, dt, limits, axis=1, **kwargs):
         dfracs = dfracs.dropna(axis=0, how='any')
     return dfracs
 
-def chmx_sspals(high, low, dt, axis=1, **kwargs):
+def chmx_sspals(high, low, dt, limits, axis=1, **kwargs):
     """ Combine high and low gain data (chmx).  Re-analyse each to find t0 (cfd
         trigger) and the delayed fraction (fd = BC/ AC) for limits=[A, B, C].
 
@@ -143,6 +143,7 @@ def chmx_sspals(high, low, dt, axis=1, **kwargs):
             high                               # np.array(dims=2)
             low                                # np.array(dims=2)
             dt                                 # float64
+            limits                             # delayed fraction ABC
 
         kwargs:
             n_bsub=100                         # number of points to use to find offset
@@ -151,7 +152,6 @@ def chmx_sspals(high, low, dt, axis=1, **kwargs):
             cfd_scale=0.8                      # cfd
             cfd_offset=1.4e-8
             cfd_threshold=0.04
-            limits=[-1.0e-8, 3.5e-8, 6.0e-7]   # delayed fraction ABC
             corr=True                          # apply boundary corrections
             dropna=False                       # remove empty rows
             debug=False                        # nans in output? try debug=True.
@@ -163,7 +163,8 @@ def chmx_sspals(high, low, dt, axis=1, **kwargs):
     """
     trad = kwargs.get('trad', False)
     index_name = kwargs.get('index_name', 'measurement')
-    df = sspals(chmx(high, low, axis, **kwargs), dt, axis, **kwargs)
+    arr = chmx(high, low, axis, **kwargs)
+    df = sspals(arr, dt, limits, axis, **kwargs)
     if not trad:
         df = df[['t0', 'DF', 'AC']]
         df.rename(index=str, columns={"DF": "fd", "AC": "total"}, inplace=True)
