@@ -144,6 +144,7 @@ def chmx_sspals(high, low, dt, limits, axis=1, **kwargs):
             low                                # np.array(dims=2)
             dt                                 # float64
             limits                             # delayed fraction ABC
+            axis=1                             # int
 
         kwargs:
             n_bsub=100                         # number of points to use to find offset
