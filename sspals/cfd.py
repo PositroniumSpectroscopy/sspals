@@ -32,9 +32,9 @@ def cfd_1d(arr, dt, **kwargs):
     sub = int(offset /dt)
     x = np.arange(len(arr)) * dt
     # add orig to inverted, rescaled and offset
-    z = arr[:-sub]-arr[sub:]*scale
+    z = arr[:-sub] - arr[sub:] * scale
     # find where greater than threshold and passes through zero
-    test = np.where(np.logical_and(arr[:-sub-1] > threshold,
+    test = np.where(np.logical_and(arr[:-sub - 1] > threshold,
                                    np.bool_(np.diff(np.sign(z)))))[0]
     if len(test) > 0:
         ix = test[0]
