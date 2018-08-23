@@ -121,16 +121,20 @@ def sspals(arr, dt, limits, axis=1, **kwargs):
             cfd_threshold=0.04
             corr=True
             debug=False
-            dropna = False
+            dropna=False
+            name="measurement"
 
         return:
             pandas.DataFrame(columns=[t0, AC, BC, DF])
     '''
+    name = kwargs.get('name', 'measurement')
     dropna = kwargs.get('dropna', False)
     data = np.apply_along_axis(sspals_1d, axis, arr, dt, limits, **kwargs)
     if axis == 0:
         data = data.T
     dfracs = pd.DataFrame(data, columns=['t0', 'AC', 'BC', 'DF'])
+    if name is not None:
+        df.index.rename(name, inplace=True)
     if dropna:
         dfracs = dfracs.dropna(axis=0, how='any')
     return dfracs
@@ -157,20 +161,17 @@ def chmx_sspals(high, low, dt, limits, axis=1, **kwargs):
             dropna=False                       # remove empty rows
             debug=False                        # nans in output? try debug=True.
             trad=False                         # return (t0, AC, DC, DF)
-            index_name=measurement             # pd.DataFrame.index.name
+            name="measurement"                 # pd.DataFrame.index.name
 
         return:
             pd.DataFrame(['t0', 'fd', 'total']))
     """
     trad = kwargs.get('trad', False)
-    index_name = kwargs.get('index_name', 'measurement')
     arr = chmx(high, low, axis, **kwargs)
     df = sspals(arr, dt, limits, axis, **kwargs)
     if not trad:
         df = df[['t0', 'DF', 'AC']]
         df.rename(index=str, columns={"DF": "fd", "AC": "total"}, inplace=True)
-    if index_name is not None:
-        df.index.rename(index_name, inplace=True)
     return df
 
 #    -------
