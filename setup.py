@@ -27,7 +27,7 @@ CLASSIFIERS = [
 ]
 
 setup(name='sspals',
-      version='0.1.1',
+      version='0.1.2',
       description='process single-shot positron annihlation lifetime spectra',
       long_description=readme(),
       url='https://github.com/PositroniumSpectroscopy/sspals',

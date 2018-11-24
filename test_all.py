@@ -6,7 +6,7 @@ import numpy as np
 from sspals.sim import sim
 from sspals.chmx import sub_offset, validate, chmx
 from sspals.cfd import cfd_1d
-from sspals.sspals import sspals_1d
+from sspals.core import sspals_1d
 
 def test_sub():
     """ background subtraction of the mean value of first 3 elements of 1-10.
